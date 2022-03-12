@@ -1,0 +1,1 @@
+open -a TextEdit.app .bash_profilez
