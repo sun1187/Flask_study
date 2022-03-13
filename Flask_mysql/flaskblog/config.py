@@ -4,9 +4,9 @@ import mysql.connector
 pymysql.install_as_MySQLdb()
 
 db = {
-    'user'     : 'user2',
-    'password' : '+"test"+',
-    'host'     : 'localhost',#'127.17.0.1',
+    'user'     : 'user2', #'root',
+    'password' : '+"test"+', #'+"my-secret-pw"+',
+    'host'     : '127.17.0.1',
     'port'     : '3306',
     'database' : 'flask_test'
 }
@@ -14,8 +14,7 @@ db = {
 class Config:
 	SECRET_KEY='301653b4421209309537996ef97b19e5'
 	#SQLALCHEMY_DATABASE_URI='sqlite:///site.db' #Mysql로 바꾸기.
-	#SQLALCHEMY_DATABASE_URI = 'mysql://user1:1234@127.17.0.1:3306/'  # Mysql.
-	SQLALCHEMY_DATABASE_URI = f"mysql+mysqlconnector://{db['user']}:{db['password']}@{db['host']}:{db['port']}/{db['database']}?charset=utf8"
+	SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{db['user']}:{db['password']}@{db['host']}:{db['port']}/{db['database']}?charset=utf8"
 	MAIL_SERVER='smtp.googlemail.com'
 	MAIL_PORT=587
 	MAIL_USE_TLS=True
