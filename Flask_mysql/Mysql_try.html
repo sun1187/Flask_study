@@ -1,0 +1,690 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>Mysql 도커로 하기</title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 3px;
+	padding: 1rem;
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.column-list {
+	display: flex;
+	justify-content: space-between;
+}
+
+.column {
+	padding: 0 1em;
+}
+
+.column:first-child {
+	padding-left: 0;
+}
+
+.column:last-child {
+	padding-right: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding: 0.125rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+	border-collapse: collapse;
+}
+
+table {
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	text-indent: -1.7em;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+}
+
+.simple-table-header {
+	background: rgb(247, 246, 243);
+	color: black;
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-block;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	transform: scale(1.5);
+	margin-right: 0.6em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1.25em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(55, 53, 47, 1);
+}
+.highlight-gray {
+	color: rgba(120, 119, 116, 1);
+	fill: rgba(120, 119, 116, 1);
+}
+.highlight-brown {
+	color: rgba(159, 107, 83, 1);
+	fill: rgba(159, 107, 83, 1);
+}
+.highlight-orange {
+	color: rgba(217, 115, 13, 1);
+	fill: rgba(217, 115, 13, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 145, 47, 1);
+	fill: rgba(203, 145, 47, 1);
+}
+.highlight-teal {
+	color: rgba(68, 131, 97, 1);
+	fill: rgba(68, 131, 97, 1);
+}
+.highlight-blue {
+	color: rgba(51, 126, 169, 1);
+	fill: rgba(51, 126, 169, 1);
+}
+.highlight-purple {
+	color: rgba(144, 101, 176, 1);
+	fill: rgba(144, 101, 176, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(212, 76, 71, 1);
+	fill: rgba(212, 76, 71, 1);
+}
+.highlight-gray_background {
+	background: rgba(241, 241, 239, 1);
+}
+.highlight-brown_background {
+	background: rgba(244, 238, 238, 1);
+}
+.highlight-orange_background {
+	background: rgba(251, 236, 221, 1);
+}
+.highlight-yellow_background {
+	background: rgba(251, 243, 219, 1);
+}
+.highlight-teal_background {
+	background: rgba(237, 243, 236, 1);
+}
+.highlight-blue_background {
+	background: rgba(231, 243, 248, 1);
+}
+.highlight-purple_background {
+	background: rgba(244, 240, 247, 0.8);
+}
+.highlight-pink_background {
+	background: rgba(249, 238, 243, 0.8);
+}
+.highlight-red_background {
+	background: rgba(253, 235, 236, 1);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(120, 119, 116, 1);
+	fill: rgba(120, 119, 116, 1);
+}
+.block-color-brown {
+	color: rgba(159, 107, 83, 1);
+	fill: rgba(159, 107, 83, 1);
+}
+.block-color-orange {
+	color: rgba(217, 115, 13, 1);
+	fill: rgba(217, 115, 13, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 145, 47, 1);
+	fill: rgba(203, 145, 47, 1);
+}
+.block-color-teal {
+	color: rgba(68, 131, 97, 1);
+	fill: rgba(68, 131, 97, 1);
+}
+.block-color-blue {
+	color: rgba(51, 126, 169, 1);
+	fill: rgba(51, 126, 169, 1);
+}
+.block-color-purple {
+	color: rgba(144, 101, 176, 1);
+	fill: rgba(144, 101, 176, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(212, 76, 71, 1);
+	fill: rgba(212, 76, 71, 1);
+}
+.block-color-gray_background {
+	background: rgba(241, 241, 239, 1);
+}
+.block-color-brown_background {
+	background: rgba(244, 238, 238, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 236, 221, 1);
+}
+.block-color-yellow_background {
+	background: rgba(251, 243, 219, 1);
+}
+.block-color-teal_background {
+	background: rgba(237, 243, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(231, 243, 248, 1);
+}
+.block-color-purple_background {
+	background: rgba(244, 240, 247, 0.8);
+}
+.block-color-pink_background {
+	background: rgba(249, 238, 243, 0.8);
+}
+.block-color-red_background {
+	background: rgba(253, 235, 236, 1);
+}
+.select-value-color-pink { background-color: rgba(245, 224, 233, 1); }
+.select-value-color-purple { background-color: rgba(232, 222, 238, 1); }
+.select-value-color-green { background-color: rgba(219, 237, 219, 1); }
+.select-value-color-gray { background-color: rgba(227, 226, 224, 1); }
+.select-value-color-opaquegray { background-color: rgba(255, 255, 255, 0.0375); }
+.select-value-color-orange { background-color: rgba(250, 222, 201, 1); }
+.select-value-color-brown { background-color: rgba(238, 224, 218, 1); }
+.select-value-color-red { background-color: rgba(255, 226, 221, 1); }
+.select-value-color-yellow { background-color: rgba(253, 236, 200, 1); }
+.select-value-color-blue { background-color: rgba(211, 229, 239, 1); }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style></head><body><article id="f9a57658-06cf-47ed-90d2-70d22cd81ac3" class="page sans"><header><h1 class="page-title">Mysql 도커로 하기</h1></header><div class="page-body"><p id="b4ef160d-9a5e-4495-a33b-9ce6d9891270" class="">
+</p><h1 id="40dbada2-8885-4d7b-a277-0ce4da4f7562" class="">0. 준비하기</h1><p id="de588246-9958-4c8f-b386-f31ef20a5618" class="">docker run -d -p 3306:3306 --name some-mysql -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql:latest</p><p id="af9c75bf-bae9-40c4-a1c5-82423a52710a" class="">
+</p><p id="0b51cfb3-9677-48e0-847c-a9b8b8964591" class="">docker exec -it some-mysql bash</p><p id="72879f26-b44c-46eb-ad82-d000da43727c" class="">
+</p><h1 id="59c1cca8-dba9-42f7-b723-ab48dd4c326b" class="">1. mysql 실행하기</h1><p id="af3ecbfc-ce4e-4299-9169-80f78232a9c4" class="">mysql -u root -p</p><p id="a67ff5d0-094c-434c-ab61-67567eed6aa5" class="">(password: my-secret-pw)</p><p id="e8bf2818-6998-4d85-b956-a62790ec49a5" class="">
+</p><h3 id="168acc04-fc69-4056-a6ac-c49b98805bd4" class="">사용자 권한 추가</h3><p id="f7239afa-b5a0-4aee-938b-f5c748a81120" class=""><code>mysql&gt; create user user2@localhost identified by &#x27;test&#x27;;</code></p><p id="1f2cb258-8dcf-4923-8502-05a8e275d011" class=""><code>mysql&gt; create user user2@&#x27;%&#x27; identified by &#x27;test&#x27;;</code></p><figure id="b0a31b72-0146-4426-9789-0afbdf307f74" class="image"><a href="Mysql%20%E1%84%83%E1%85%A9%E1%84%8F%E1%85%A5%20b0a31/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2022-03-13_%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB_4.21.19.png"><img style="width:336px" src="Mysql%20%E1%84%83%E1%85%A9%E1%84%8F%E1%85%A5%20b0a31/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2022-03-13_%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB_4.21.19.png"/></a></figure><p id="7817faf2-bdcb-421f-8291-da63f2072727" class="">
+</p><h3 id="ed168787-c6b1-473d-848b-5077c6243244" class="">데이터베이스 생성</h3><p id="e7f8d817-b906-4365-898f-d919b8444328" class=""><code>mysql&gt; create database flask_test;</code></p><figure id="1e7dc715-e35e-4d00-affd-e19a6f43a8f5" class="image"><a href="Mysql%20%E1%84%83%E1%85%A9%E1%84%8F%E1%85%A5%20b0a31/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2022-03-13_%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB_2.57.04.png"><img style="width:288px" src="Mysql%20%E1%84%83%E1%85%A9%E1%84%8F%E1%85%A5%20b0a31/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2022-03-13_%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB_2.57.04.png"/></a></figure><h3 id="a7394bad-4189-4e88-9812-093777e18bcd" class="">테이블만들기</h3><ul id="b4d3b940-3bfd-4d39-b618-ff733ff6a177" class="bulleted-list"><li style="list-style-type:disc">User 테이블</li></ul><div id="8fcd926c-aeed-4291-94e0-277d84d64995" class="column-list"><div id="49b1d4c4-09fd-4d0a-bb36-d40bf8e84257" style="width:50%" class="column"><figure id="dc7b23bf-a5b9-4586-8c30-f104e376340f" class="image"><a href="Mysql%20%E1%84%83%E1%85%A9%E1%84%8F%E1%85%A5%20b0a31/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2022-03-13_%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB_3.19.17.png"><img style="width:480px" src="Mysql%20%E1%84%83%E1%85%A9%E1%84%8F%E1%85%A5%20b0a31/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2022-03-13_%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB_3.19.17.png"/></a></figure></div><div id="62972d82-3ce6-42e6-8ead-038ea743b8c0" style="width:50%" class="column"><figure id="75f5f7eb-beb3-412c-91b0-86cb1d01d01d" class="image"><a href="Mysql%20%E1%84%83%E1%85%A9%E1%84%8F%E1%85%A5%20b0a31/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2022-03-13_%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB_3.29.14.png"><img style="width:998px" src="Mysql%20%E1%84%83%E1%85%A9%E1%84%8F%E1%85%A5%20b0a31/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2022-03-13_%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB_3.29.14.png"/></a></figure></div></div><div id="8aea1430-605e-453d-9c7b-1fa0d8171113" class="column-list"><div id="b1ee01ca-565d-43d8-9cea-bd3ee297ab06" style="width:56.25%" class="column"><ul id="3e648be0-40d4-4eb9-8e98-f9a315f988de" class="bulleted-list"><li style="list-style-type:disc">Post 테이블<figure id="48a49513-e959-49ef-be29-ab371c9365f0" class="image"><a href="Mysql%20%E1%84%83%E1%85%A9%E1%84%8F%E1%85%A5%20b0a31/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2022-03-13_%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB_3.37.23.png"><img style="width:1110px" src="Mysql%20%E1%84%83%E1%85%A9%E1%84%8F%E1%85%A5%20b0a31/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2022-03-13_%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB_3.37.23.png"/></a></figure></li></ul></div><div id="8a0e4280-8484-4202-88d8-5ad3d67f0d52" style="width:43.74999999999999%" class="column"><figure id="af684516-a439-436f-ac53-e82d9837fc3c" class="image"><a href="Mysql%20%E1%84%83%E1%85%A9%E1%84%8F%E1%85%A5%20b0a31/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2022-03-13_%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB_3.37.52.png"><img style="width:1374px" src="Mysql%20%E1%84%83%E1%85%A9%E1%84%8F%E1%85%A5%20b0a31/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2022-03-13_%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB_3.37.52.png"/></a></figure></div></div><p id="997b917d-0213-42b1-bbaf-5044686db91d" class="">
+</p><h1 id="51f17397-1466-4859-b2bc-1c857c0bb9a5" class="">2. <a href="http://config.py">config.py</a> 수정하기</h1><pre id="e8e1a6d9-0174-4bf8-bfa5-7ccefdb7f396" class="code"><code>import os
+import pymysql
+import mysql.connector
+pymysql.install_as_MySQLdb()
+
+db = {
+    &#x27;user&#x27;     : &#x27;user2&#x27;,
+    &#x27;password&#x27; : &#x27;+&quot;test&quot;+&#x27;,
+    &#x27;host&#x27;     : &#x27;127.17.0.1&#x27;,
+    &#x27;port&#x27;     : &#x27;3306&#x27;,
+    &#x27;database&#x27; : &#x27;flask_test&#x27;
+}
+
+class Config:
+	SECRET_KEY=&#x27;301653b4421209309537996ef97b19e5&#x27;
+	SQLALCHEMY_DATABASE_URI = f&quot;mysql+mysqlconnector://{db[&#x27;user&#x27;]}:{db[&#x27;password&#x27;]}@{db[&#x27;host&#x27;]}:{db[&#x27;port&#x27;]}/{db[&#x27;database&#x27;]}?charset=utf8&quot;
+	MAIL_SERVER=&#x27;smtp.googlemail.com&#x27;
+	MAIL_PORT=587
+	MAIL_USE_TLS=True
+	MAIL_USERNAME=os.environ.get(&#x27;EMAIL_USER&#x27;)
+	MAIL_PASSWORD=os.environ.get(&#x27;EMAIL_PASS&#x27;)</code></pre><p id="3da2df0e-267e-4da6-a1f8-78c4987713a1" class="">
+</p><p id="d783f055-7a4a-4a5b-8f7f-22bf861266f0" class="">호스트 명:</p><figure id="b87bede8-6a06-42f4-b4fd-2f8b35e44b9e" class="image"><a href="Mysql%20%E1%84%83%E1%85%A9%E1%84%8F%E1%85%A5%20b0a31/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2022-03-13_%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB_11.26.36.png"><img style="width:2174px" src="Mysql%20%E1%84%83%E1%85%A9%E1%84%8F%E1%85%A5%20b0a31/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2022-03-13_%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB_11.26.36.png"/></a></figure><p id="c083db6d-874b-4863-8768-f56ee29af905" class="">
+</p><h1 id="ab179a40-d262-4e1f-9abc-e4c5e12d4c3d" class="">2. 에러 발생</h1><ul id="b1b32b89-1998-425a-b6e4-ae0858800e5c" class="bulleted-list"><li style="list-style-type:disc">‘user&#x27; : &#x27;root&#x27;, ‘password&#x27; : &#x27;+&quot;my-secret-pw&quot;+&#x27;일 때</li></ul><figure id="2a8ded2b-774f-4290-ac2b-a6af2020a930" class="image"><a href="Mysql%20%E1%84%83%E1%85%A9%E1%84%8F%E1%85%A5%20b0a31/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2022-03-13_%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB_11.35.14.png"><img style="width:864px" src="Mysql%20%E1%84%83%E1%85%A9%E1%84%8F%E1%85%A5%20b0a31/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2022-03-13_%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB_11.35.14.png"/></a></figure><p id="9416114c-a735-473a-9c70-15ba272a79fb" class="">
+</p><ul id="281fbacb-d821-442e-8a63-b34bf014c3dd" class="bulleted-list"><li style="list-style-type:disc">‘user&#x27; : &#x27;user2&#x27;, ‘password&#x27; : &#x27;+&quot;test&quot;+&#x27;일 때 (같은 에러 발생)</li></ul><figure id="27af580d-cc25-484e-871d-71737204d7a9" class="image"><a href="Mysql%20%E1%84%83%E1%85%A9%E1%84%8F%E1%85%A5%20b0a31/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2022-03-13_%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB_11.37.17.png"><img style="width:816px" src="Mysql%20%E1%84%83%E1%85%A9%E1%84%8F%E1%85%A5%20b0a31/%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA_2022-03-13_%E1%84%8B%E1%85%A9%E1%84%8C%E1%85%A5%E1%86%AB_11.37.17.png"/></a></figure><p id="aedb6d49-23c5-47c2-b68e-c2c8873e1352" class="">
+</p><p id="f68ec669-5986-4d9f-81da-5bd8aee8e927" class="">
+</p><p id="2ab41b2c-897b-47be-9a68-ea94aadfae1f" class="">
+</p><p id="d98effd5-f755-4a3e-ab14-1592be1915ca" class="">참고:</p><p id="6bd1da51-69ac-4c23-b0b6-2e35ae3596b0" class=""><a href="https://nickjoit.tistory.com/144">https://nickjoit.tistory.com/144</a></p><p id="990ae608-3c28-47bb-8c09-38256f8a681e" class=""><a href="https://boritea.tistory.com/84?category=901314">https://boritea.tistory.com/84?category=901314</a></p><p id="33b0ef0c-769d-4a6b-8857-bfb09b363427" class=""><a href="https://velog.io/@sungjun-jin/TIL-0524-Flask-mysql-%EC%97%B0%EB%8F%99%ED%95%98%EA%B8%B0">https://velog.io/@sungjun-jin/TIL-0524-Flask-mysql-연동하기</a></p><p id="5ffd3669-46da-44cc-94b3-f300db507579" class="">
+</p></div></article></body></html>
