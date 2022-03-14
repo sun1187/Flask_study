@@ -1,18 +1,41 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 import json
 import numpy as np
-
+import pymysql
 import torch
-from torch.utils.data import Dataset, DataLoader
 import gluonnlp as nlp
-
 from kobert.utils import get_tokenizer
 from kobert.pytorch_kobert import get_pytorch_kobert_model
 from model import BERTDataset, BERTClassifier
 from recsys_step4 import all_rs
 from recsys_step3 import recsys_step3
 
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from flask_bcrypt import Bcrypt
+from flask_login import LoginManager
+from flask_mail import Mail
+from config import Config
+
+#db = SQLAlchemy()
+#bcrypt = Bcrypt()
+login_manager = LoginManager()
+login_manager.login_view = 'users.login' #function name of route
+login_manager.login_message_category = 'info'
+#mail = Mail()
+
 app = Flask(__name__)
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:my-secret-pw@127.0.0.1:3306/flask_test2"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SECRET_KEY"] = '301653b4421209309537996ef97b19e5'
+db = SQLAlchemy(app)
+#app.config.from_object(Config)
+#db.init_app(app)
+#bcrypt.init_app(app)
+login_manager.init_app(app)
+#mail.init_app(app)
+
+#engine = db.create_engine("mysql+pymysql://root:my-secret-pw@127.0.0.1:3306/flask_test2")
 
 # softmax 구하는 함수
 def softmax(x):
@@ -218,6 +241,86 @@ def re_recys():
 
 #회원 가입(post), 로그인(post), 작성한 글 목록(get), 글(세부내용)(get)
 #조회: get, 내보내기: post
+from flask import session
+from forms import UserLoginForm
+from flask_model import User, Post
+from flask_bcrypt import Bcrypt
+bcrypt = Bcrypt()
+bcrypt.init_app(app)
+
+@app.route('/login', methods=['POST'])
+def login():
+    username = request.form.get("username")
+    password = request.form.get("password")
+    #form = UserLoginForm()
+    user = User.query.filter_by(username = username).first()
+    if not user:
+        return "존재하지 않는 사용자이다."
+    if not bcrypt.check_password_hash(user.password, password):
+        return "비밀번호 틀렸다."
+    return jsonify({
+        "user_id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "image_file": user.image_file,
+        "password": user.password,
+    })
+
+@app.route('/register', methods=['POST'])
+def register():
+    #form = RegistrationForm()
+    username = request.form.get("username")
+    email = request.form.get("email")
+    password = request.form.get("password")
+    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+
+    user = User(username=username, email=email, password=hashed_password)
+    db.session.add(user)
+    db.session.commit()
+    return "회원가입 성공"
+
+
+@app.route("/post/<int:post_id>")
+def post(post_id):
+    post = Post.query.get_or_404(post_id)
+    return jsonify({
+        "id": post.id,
+        "title": post.title,
+        "date_posted": post.date_posted,
+        "content": post.content,
+        "user_id": post.user_id,
+    })
+
+from flask_login import current_user
+@app.route("/post_all/<int:user_id>")
+def post_all(user_id):
+    posts = current_user.posts
+    return jsonify({
+        "id": post.id,
+        "title": post.title,
+        "date_posted": post.date_posted,
+        "content": post.content,
+        "user_id": post.user_id,
+    })
+
+#    if form.validate_on_submit():
+#        error = None
+#        user = User.query.filter_by(username=form.username.data).first()
+#        print(user)
+#        print(user.passowrd)
+#        if not user:
+#            return "존재하지 않는 사용자입니다."
+#        elif not check_password_hash(user.password, form.password.data):
+#            return "비밀번호가 올바르지 않습니다."
+        #if error is None:
+        #    session.clear()
+        #    session['user_id'] = user.id
+        #    return redirect(url_for('main.index'))
+        #flash(error)
+#        return "로그인 성공"
+#    return "아무것도 없음"
+
+
 
 
 if __name__ == '__main__':
