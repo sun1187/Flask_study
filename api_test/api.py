@@ -141,43 +141,19 @@ def predict_with_music_step3():
     fifth = [result['곡 제목'][4], result['가수'][4], result['원가사'][4], result['tag max'][4], result['대분류str'][4]]
     df = [first, second, third, fourth, fifth]
 
-    print()
-    print('**Top1')
-    print('곡 제목:', df[0][0])
-    print('가수:', df[0][1])
-    #print('원가사:', df[0][2])
-    #print('tag max:', df[0][3])
-    #print('대분류str:', df[0][4])
-    print()
-    print('**Top2')
-    print('곡 제목:', df[1][0])
-    print('가수:', df[1][1])
-    #print('원가사:', df[1][2])
-    #print('tag max:', df[1][3])
-    #print('대분류str:', df[1][4])
-    print()
-    print('**Top3')
-    print('곡 제목:', df[2][0])
-    print('가수:', df[2][1])
-    #print('원가사:', df[2][2])
-    #print('tag max:', df[2][3])
-    #print('대분류str:', df[2][4])
-    print()
-    print('**Top4')
-    print('곡 제목:', df[3][0])
-    print('가수:', df[3][1])
-    #print('원가사:', df[3][2])
-    #print('tag max:', df[3][3])
-    #print('대분류str:', df[3][4])
-    print()
-    print('**Top5')
-    print('곡 제목:', df[4][0])
-    print('가수:', df[4][1])
-    #print('원가사:', df[4][2])
-    #print('tag max:', df[4][3])
-    #print('대분류str:', df[4][4])
-
-    return str(nlp_out[0][:3])
+    return jsonify({
+        "확률": str(nlp_out[0][:3]),
+        "top1_name": df[0][0],
+        "top1_singer": df[0][1],
+        "top2_name": df[1][0],
+        "top2_singer": df[1][1],
+        "top3_name": df[2][0],
+        "top3_singer": df[2][1],
+        "top4_name": df[3][0],
+        "top4_singer": df[3][1],
+        "top5_name": df[4][0],
+        "top5_singer": df[4][1]
+    })
 
 
 #{"emotion_list": [1.6410377e-04, 9.9766809e-01, 2.1216171e-03],
@@ -201,43 +177,18 @@ def re_recys():
     fifth = [result['곡 제목'][4], result['가수'][4], result['원가사'][4], result['tag max'][4], result['대분류str'][4]]
     df = [first, second, third, fourth, fifth]
 
-    print()
-    print('**Top1')
-    print('곡 제목:', df[0][0])
-    print('가수:', df[0][1])
-    # print('원가사:', df[0][2])
-    # print('tag max:', df[0][3])
-    # print('대분류str:', df[0][4])
-    print()
-    print('**Top2')
-    print('곡 제목:', df[1][0])
-    print('가수:', df[1][1])
-    # print('원가사:', df[1][2])
-    # print('tag max:', df[1][3])
-    # print('대분류str:', df[1][4])
-    print()
-    print('**Top3')
-    print('곡 제목:', df[2][0])
-    print('가수:', df[2][1])
-    # print('원가사:', df[2][2])
-    # print('tag max:', df[2][3])
-    # print('대분류str:', df[2][4])
-    print()
-    print('**Top4')
-    print('곡 제목:', df[3][0])
-    print('가수:', df[3][1])
-    # print('원가사:', df[3][2])
-    # print('tag max:', df[3][3])
-    # print('대분류str:', df[3][4])
-    print()
-    print('**Top5')
-    print('곡 제목:', df[4][0])
-    print('가수:', df[4][1])
-    # print('원가사:', df[4][2])
-    # print('tag max:', df[4][3])
-    # print('대분류str:', df[4][4])
-
-    return "-1"
+    return jsonify({
+        "top1_name": df[0][0],
+        "top1_singer": df[0][1],
+        "top2_name": df[1][0],
+        "top2_singer": df[1][1],
+        "top3_name": df[2][0],
+        "top3_singer": df[2][1],
+        "top4_name": df[3][0],
+        "top4_singer": df[3][1],
+        "top5_name": df[4][0],
+        "top5_singer": df[4][1]
+    })
 
 #회원 가입(post), 로그인(post), 작성한 글 목록(get), 글(세부내용)(get)
 #조회: get, 내보내기: post
@@ -291,17 +242,25 @@ def post(post_id):
         "user_id": post.user_id,
     })
 
-from flask_login import current_user
-@app.route("/post_all/<int:user_id>")
-def post_all(user_id):
-    posts = current_user.posts
+##post로 안되어서...
+@app.route("/user/<string:username>")
+def user_posts(username):
+    #page = request.args.get('page', 1, type=int)
+    user = User.query.filter_by(username=username).first_or_404()
+    print(user)
+    print(user.posts)
+    posts = Post.query.filter_by(author=user)\
+        .order_by(Post.date_posted.desc()).all()#\
+        #.paginate(page=page, per_page=5)
+    #return render_template('user_posts.html', posts=posts, user=user)
     return jsonify({
-        "id": post.id,
-        "title": post.title,
-        "date_posted": post.date_posted,
-        "content": post.content,
-        "user_id": post.user_id,
+        "id": " || ".join(str(ele.id) for ele in user.posts),
+        "user_id": " || ".join(str(ele.user_id) for ele in user.posts),
+        "date_posted": " || ".join(str(ele.date_posted) for ele in user.posts),
+        "title": " || ".join(ele.title for ele in user.posts),
+        "content": " || ".join(ele.content for ele in user.posts)
     })
+
 
 #    if form.validate_on_submit():
 #        error = None
@@ -319,8 +278,6 @@ def post_all(user_id):
         #flash(error)
 #        return "로그인 성공"
 #    return "아무것도 없음"
-
-
 
 
 if __name__ == '__main__':
