@@ -242,26 +242,25 @@ def post(post_id):
         "user_id": post.user_id,
     })
 
-
+##post로 안되어서...
 @app.route("/user/<string:username>")
 def user_posts(username):
-    page = request.args.get('page', 1, type=int)
+    #page = request.args.get('page', 1, type=int)
     user = User.query.filter_by(username=username).first_or_404()
+    print(user)
+    print(user.posts)
+    posts = Post.query.filter_by(author=user)\
+        .order_by(Post.date_posted.desc()).all()#\
+        #.paginate(page=page, per_page=5)
+    #return render_template('user_posts.html', posts=posts, user=user)
+    return jsonify({
+        "id": " || ".join(str(ele.id) for ele in user.posts),
+        "user_id": " || ".join(str(ele.user_id) for ele in user.posts),
+        "date_posted": " || ".join(str(ele.date_posted) for ele in user.posts),
+        "title": " || ".join(ele.title for ele in user.posts),
+        "content": " || ".join(ele.content for ele in user.posts)
+    })
 
-    posts = Post.query.filter_by(user_id=user.id)\
-        .order_by(Post.date_posted.desc())\
-        .paginate(page=page, per_page=5, error_out=False)
-
-    post_df = []
-    for ele in posts.items:
-        Data = {'id': ele.id, 'content': ele.content}
-        post_df.append(Data)
-
-    return jsonify({'key': post_df})
-
-# 글쓰면 db insert
-# 노래 정보 저장
-#
 
 #    if form.validate_on_submit():
 #        error = None
