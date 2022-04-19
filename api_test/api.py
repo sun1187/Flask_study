@@ -7,8 +7,8 @@ import gluonnlp as nlp
 from kobert.utils import get_tokenizer
 from kobert.pytorch_kobert import get_pytorch_kobert_model
 from model import BERTDataset, BERTClassifier
-from recsys_step4 import all_rs
-from recsys_step3 import recsys_step3
+#from recsys_step4 import all_rs
+#from recsys_step3 import recsys_step3
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -25,7 +25,7 @@ login_manager.login_message_category = 'info'
 #mail = Mail()
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:my-secret-pw@127.0.0.1:3306/flask_test2"
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:my-secret-pw@127.0.0.1:3306/smtm"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = '301653b4421209309537996ef97b19e5'
 db = SQLAlchemy(app)
@@ -119,7 +119,7 @@ def predict():
 #"lyric":0.7}
 @app.route('/predict_with_music_step3', methods=['POST'])
 def predict_with_music_step3():
-    event = json.loads(request.data)#, encoding="UTF-8")
+    event = json.loads(request.datas)#, encoding="UTF-8")
     values = event['values']
     emo_weight = event['emotion']
     lyric_weight = event['lyric']
@@ -194,71 +194,103 @@ def re_recys():
 #조회: get, 내보내기: post
 from flask import session
 from forms import UserLoginForm
-from flask_model import User, Post
+from flask_model import user_table, diary_table, recommend_table
 from flask_bcrypt import Bcrypt
 bcrypt = Bcrypt()
 bcrypt.init_app(app)
 
 @app.route('/login', methods=['POST'])
 def login():
-    username = request.form.get("username")
+    user_name = request.form.get("user_name")
     password = request.form.get("password")
     #form = UserLoginForm()
-    user = User.query.filter_by(username = username).first()
+    user = user_table.query.filter_by(user_name = user_name).first()
     if not user:
         return "존재하지 않는 사용자이다."
     if not bcrypt.check_password_hash(user.password, password):
         return "비밀번호 틀렸다."
     return jsonify({
-        "user_id": user.id,
-        "username": user.username,
-        "email": user.email,
-        "image_file": user.image_file,
+        "user_id": user.user_id,
+        "user_name": user.user_name,
+        "user_nickname": user.user_nickname,
         "password": user.password,
     })
+
+#table에 modify update 수정하기
+#diary_id -> long or bigint
+#
 
 @app.route('/register', methods=['POST'])
 def register():
     #form = RegistrationForm()
-    username = request.form.get("username")
-    email = request.form.get("email")
+    user_name = request.form.get("user_name")
+    user_nickname = request.form.get("user_nickname")
     password = request.form.get("password")
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
-    user = User(username=username, email=email, password=hashed_password)
+    user = user_table(user_name=user_name, user_nickname=user_nickname, password=hashed_password)
     db.session.add(user)
     db.session.commit()
     return "회원가입 성공"
 
+@app.route("/post/new", methods=['POST'])
+def new_post():
+    diary_name = request.form.get("diary_name")
+    diary_date = request.form.get("diary_date")
+    content = request.form.get("content")
+    happy_score = request.form.get("happy_score")
+    sad_score = request.form.get("sad_score")
+    angry_score = request.form.get("angry_score")
+    mid_score = request.form.get("mid_score")
+    user_id = request.form.get("user_id") ####나중에 고칠필요. 로그인 시 기능으로.
+    post = diary_table(diary_name=diary_name, diary_date=diary_date,
+                       content=content, happy_score=happy_score,
+                       sad_score=sad_score, angry_score=angry_score, mid_score=mid_score,
+                       user_id=user_id)
+    db.session.add(post)
+    db.session.commit()
+    return '글 쓰기 성공'
 
 @app.route("/post/<int:post_id>")
 def post(post_id):
-    post = Post.query.get_or_404(post_id)
+    post = diary_table.query.get_or_404(post_id)
     return jsonify({
-        "id": post.id,
-        "title": post.title,
-        "date_posted": post.date_posted,
+        "diary_id": post.diary_id,
+        "diary_name": post.diary_name,
+        "diary_date": post.diary_date,
         "content": post.content,
         "user_id": post.user_id,
     })
 
 
-@app.route("/user/<string:username>")
-def user_posts(username):
+@app.route("/user/<string:user_name>")
+def user_posts(user_name):
     page = request.args.get('page', 1, type=int)
-    user = User.query.filter_by(username=username).first_or_404()
+    user = user_table.query.filter_by(user_name=user_name).first_or_404()
 
-    posts = Post.query.filter_by(user_id=user.id)\
-        .order_by(Post.date_posted.desc())\
+    posts = diary_table.query.filter_by(user_id=user.user_id)\
+        .order_by(diary_table.create_date.desc())\
         .paginate(page=page, per_page=5, error_out=False)
 
     post_df = []
     for ele in posts.items:
-        Data = {'id': ele.id, 'content': ele.content}
+        Data = {'id': ele.diary_id, 'diary_name': ele.diary_name, 'content': ele.content}
         post_df.append(Data)
 
     return jsonify({'key': post_df})
 
+
+@app.route("/post/save_rec_result", methods=['POST'])
+def save_rec_result():
+    diary_id = request.form.get("diary_id")
+    song_sequence = request.form.get("song_sequence")
+    rec_song_id = request.form.get("rec_song_id")
+    rec_score = request.form.get("rec_score")
+    rec_result = recommend_table(diary_id=diary_id, song_sequence=song_sequence,
+                       rec_song_id=rec_song_id, rec_score=rec_score)
+    db.session.add(rec_result)
+    db.session.commit()
+    return '노래 저장 성공'
 # 글쓰면 db insert
 # 노래 정보 저장
 #
